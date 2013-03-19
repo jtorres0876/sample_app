@@ -50,6 +50,12 @@ describe "Authentication" do
 		describe " for non-signed-in users" do
 		let(:user) { FactoryGirl.create(:user) }
 
+			describe "making sure 'Profile' and 'Settings' links are not visible" do
+
+				it { should_not have_link('Profile', href: users_path(user)) }
+				it { should_not have_link('Settings', href: edit_user_path(user)) }
+			end
+
 			describe "when attempting to visit a protected page" do
         		before do
           			visit edit_user_path(user)
@@ -66,26 +72,38 @@ describe "Authentication" do
       		end	
 
 
-			describe " in the Users controller" do
+			describe "in the Users controller" do
 
-				describe " visiting the edit page" do
+				describe "visiting the edit page" do
 					before { visit edit_user_path(user) }
 					it { should have_selector('title', text: 'Sign in') }
 				end
 
-				describe " submitting to the update action" do
+				describe "submitting to the update action" do
 					before { put user_path(user) }
 					specify { response.should redirect_to(signin_path) }
 				end
 
-				describe " visit the user index " do
+				describe "visit the user index " do
 					before { visit users_path }
 					it { should have_selector('title', text: 'Sign in') }
+				end
+			end
+
+			describe "in the Microposts controller" do
+
+				describe "submitting to the create action" do
+					before 	{ post microposts_path }
+					specify { response.should redirect_to(signin_path) }
+				end
+
+				describe "submitting to the destroy action" do
+					before 	{ delete microposts_path(FactoryGirl.create(:micropost)) }
 				end
 			end	
 		end
 
-		describe " as wrong user" do
+		describe "as wrong user" do
 			let(:user) { FactoryGirl.create(:user) }
 			let(:wrong_user) { FactoryGirl.create(:user, email: "wrong@example.com") }
 
@@ -111,6 +129,16 @@ describe "Authentication" do
 			describe "submitting a DELETE request to the Users#destroy action" do
 				before { delete user_path(user) }
 				specify { response.should redirect_to(root_path) }
+			end
+
+			describe "submitting a POST request to the Users#create action" do
+				before { post users_path }
+				specify { response.should redirect_to(root_path) }
+			end
+
+			describe " accessing 'new' action" do
+				before { visit signup_path }
+				it { should_not have_selector('title', text: 'Sign up') }
 			end
 		end
 	end
