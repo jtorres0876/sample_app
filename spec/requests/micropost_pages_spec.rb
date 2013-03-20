@@ -34,6 +34,18 @@ describe "Micropost pages" do
   describe "micropost destruction" do
     before  { FactoryGirl.create(:micropost, user: user) }
 
+    describe "as incorrect user" do
+      let!(:second_user) { FactoryGirl.create(:user) }
+
+      before  do
+        FactoryGirl.create(:micropost, user: second_user)
+        visit root_path
+        visit user_path(second_user)
+      end
+
+      it { should_not have_selector('delete') }
+    end  
+
     describe "as correct user" do
       before  { visit root_path }
 
